@@ -1,0 +1,43 @@
+name: CI/CD Pipeline
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      - name: zip folder
+        run: zip -r phpBB.zip .
+      - name: configure AWS credntials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      - name: Upload zip to S3
+        run: |
+          aws s3 cp phpBB.zip s3://my-new-s3bucket/phpBB.zip
+
+  download-from-s3-to-ec2:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install SSH key
+        uses: webfactory/ssh-agent@v0.8.0
+        with:
+          ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
+      - name: Download from S3 and deploy to EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no ubuntu@184.73.134.228 << 'EOF'
+          
+          aws s3 cp s3://my-new-s3bucket/phpBB.zip /tmp/phpBB.zip
+          sudo cp /tmp/phpBB.zip /var/www/html 
+          sudo unzip -o /tmp/phpBB.zip -d /var/www/html
+  
+          EOF
