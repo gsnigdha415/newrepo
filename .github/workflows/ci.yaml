@@ -36,7 +36,7 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ubuntu@184.73.134.228 << 'EOF'
           if [ ! -f /tmp/phpBB.zip ]; then
-            echo "phpBB.zip" not found on remote host"; exit 1
+            echo "phpBB.zip not found on remote host"; exit 1
           fi
           aws s3 cp s3://new-s3bucket15/phpBB.zip /tmp/phpBB.zip
           sudo cp /tmp/phpBB.zip /var/www/html 
