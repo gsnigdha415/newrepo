@@ -1,0 +1,38 @@
+name: Deploy Application
+
+on:
+  push:
+    branches:
+      - main # Trigger the workflow on a push to the main branch
+  workflow_dispatch: # Enable manual triggering with an optional input
+
+jobs:
+  # Deploy to the staging environment first
+  deploy-staging:
+    runs-on: ubuntu-latest
+    environment:
+      name: staging
+      url: https://54.210.75.3
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Deploy to Staging
+        run: |
+          echo "Deploying to staging..."
+          # Add your staging deployment script here
+
+  # Deploy to the production environment
+  # This job depends on the successful completion of the 'deploy-staging' job
+  deploy-production:
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://54.196.214.48
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Deploy to Production
+        run: |
+          echo "Deploying to production..."
+          # Add your production deployment script here
